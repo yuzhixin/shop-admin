@@ -1,11 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 from ckeditor_uploader.fields import RichTextUploadingField
 import time
 import random
 
 
-class WechatUser(AbstractUser):
+class WechatUser(models.Model):
     """微信小程序用户模型"""
     openid = models.CharField(
         max_length=64, unique=True, verbose_name='微信OpenID'
@@ -19,17 +18,19 @@ class WechatUser(AbstractUser):
     session_key = models.CharField(
         max_length=100, blank=True, verbose_name='会话密钥'
     )
-
-    # 必需属性
-    USERNAME_FIELD = 'openid'  # 使用openid作为登录标识
-    REQUIRED_FIELDS = ['username']  # 创建超级用户时需要的字段
+    created_at = models.DateTimeField(
+        auto_now_add=True, verbose_name='创建时间'
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True, verbose_name='更新时间'
+    )
 
     class Meta:
         verbose_name = '微信用户'
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return f"{self.nickname or self.username} ({self.openid})"
+        return f"{self.nickname or '匿名用户'} ({self.openid})"
 
 
 class Tag(models.Model):

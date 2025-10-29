@@ -1,8 +1,6 @@
 from django.forms import model_to_dict
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
-from django.contrib.auth import login
-from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 import json
 import requests
@@ -61,7 +59,6 @@ def wechat_login(request):
             user, created = WechatUser.objects.get_or_create(
                 openid=openid,
                 defaults={
-                    'username': openid,
                     'nickname': nickname,
                     'avatar_url': avatar_url,
                     'session_key': session_key
@@ -78,8 +75,9 @@ def wechat_login(request):
                     user.session_key = session_key
                 user.save()
 
-            # 登录用户
-            login(request, user)
+            # 将用户ID存入session
+            request.session['user_id'] = user.id
+            request.session['openid'] = user.openid
 
             return JsonResponse({
                 'code': 200,
@@ -111,29 +109,37 @@ def wechat_login(request):
     }, status=405)
 
 
-@login_required
-@csrf_exempt
 def get_current_user(request):
     """
     获取当前登录用户信息接口
     """
     if request.method == 'GET':
-        user = request.user
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({
+                'code': 401,
+                'message': '用户未登录'
+            }, status=401)
 
-        return JsonResponse({
-            'code': 200,
-            'message': '获取用户信息成功',
-            'data': {
-                'user_id': user.id,
-                'openid': user.openid,
-                'nickname': user.nickname,
-                'avatar_url': user.avatar_url,
-                'username': user.username,
-                'email': user.email,
-                'date_joined': user.date_joined.isoformat() if user.date_joined else None,
-                'last_login': user.last_login.isoformat() if user.last_login else None
-            }
-        })
+        try:
+            user = WechatUser.objects.get(id=user_id)
+            return JsonResponse({
+                'code': 200,
+                'message': '获取用户信息成功',
+                'data': {
+                    'user_id': user.id,
+                    'openid': user.openid,
+                    'nickname': user.nickname,
+                    'avatar_url': user.avatar_url,
+                    'created_at': user.created_at.isoformat() if user.created_at else None,
+                    'updated_at': user.updated_at.isoformat() if user.updated_at else None
+                }
+            })
+        except WechatUser.DoesNotExist:
+            return JsonResponse({
+                'code': 404,
+                'message': '用户不存在'
+            }, status=404)
 
     return JsonResponse({
         'code': 405,
@@ -161,12 +167,29 @@ def get_goods(request):
     })
 
 
-@login_required
+def get_user_from_session(request):
+    """从session获取用户"""
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return None
+    try:
+        return WechatUser.objects.get(id=user_id)
+    except WechatUser.DoesNotExist:
+        return None
+
+
 @csrf_exempt
 def create_order(request):
     """创建订单接口"""
     if request.method == 'POST':
         try:
+            user = get_user_from_session(request)
+            if not user:
+                return JsonResponse({
+                    'code': 401,
+                    'message': '用户未登录'
+                }, status=401)
+
             data = json.loads(request.body)
             goods_id = data.get('goods_id')
             quantity = data.get('quantity', 1)
@@ -193,7 +216,7 @@ def create_order(request):
 
             # 创建订单
             order = Order(
-                user=request.user,
+                user=user,
                 goods=goods,
                 quantity=quantity,
                 receiver_name=receiver_name,
@@ -230,14 +253,20 @@ def create_order(request):
     }, status=405)
 
 
-@login_required
 @csrf_exempt
 def get_orders(request):
     """获取用户订单列表"""
     if request.method == 'GET':
         try:
+            user = get_user_from_session(request)
+            if not user:
+                return JsonResponse({
+                    'code': 401,
+                    'message': '用户未登录'
+                }, status=401)
+
             orders = Order.objects.filter(
-                user=request.user
+                user=user
             ).order_by('-created_at')
 
             orders_data = []
@@ -273,12 +302,18 @@ def get_orders(request):
     }, status=405)
 
 
-@login_required
 @csrf_exempt
 def wechat_pay(request):
     """微信支付接口"""
     if request.method == 'POST':
         try:
+            user = get_user_from_session(request)
+            if not user:
+                return JsonResponse({
+                    'code': 401,
+                    'message': '用户未登录'
+                }, status=401)
+
             data = json.loads(request.body)
             order_id = data.get('order_id')
 
@@ -292,7 +327,7 @@ def wechat_pay(request):
             try:
                 order = Order.objects.get(
                     id=order_id,
-                    user=request.user,
+                    user=user,
                     status='pending'
                 )
             except Order.DoesNotExist:
@@ -317,7 +352,7 @@ def wechat_pay(request):
             spbill_create_ip = request.META.get('REMOTE_ADDR', '127.0.0.1')
             notify_url = 'http://your-domain.com/shop/wechat_pay_notify/'
             trade_type = 'JSAPI'
-            openid = request.user.openid
+            openid = user.openid
 
             # 生成签名
             params = {

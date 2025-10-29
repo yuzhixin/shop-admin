@@ -43,8 +43,7 @@ INSTALLED_APPS = [
     'shop',
 ]
 
-# 自定义用户模型
-AUTH_USER_MODEL = 'shop.WechatUser'
+# 注意：WechatUser 现在是普通模型，不再作为认证用户模型
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
