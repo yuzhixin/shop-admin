@@ -1,11 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 from ckeditor_uploader.fields import RichTextUploadingField
 import time
 import random
 
 
-class WechatUser(AbstractUser):
+class WechatUser(models.Model):
     """微信小程序用户模型"""
     openid = models.CharField(
         max_length=64, unique=True, verbose_name='微信OpenID'
