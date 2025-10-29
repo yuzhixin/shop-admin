@@ -26,8 +26,6 @@ SECRET_KEY = 'django-insecure-9dcu!q67c)5ygz42f7l^e856@1qe%rh)u$u%qbu7y=gn7in*tr
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -147,3 +145,15 @@ CKEDITOR_CONFIGS = {
 }
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://shop.kekouen.cn',
+    'https://www.kekouen.cn',
+]
+
+ALLOWED_HOSTS = [
+    'shop.kekouen.cn',
+    'www.kekouen.cn',
+    'localhost',
+    '127.0.0.1',
+]
