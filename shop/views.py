@@ -23,17 +23,12 @@ def wechat_login(request):
             # 解析请求数据
             data = json.loads(request.body)
             code = data.get('code')
-            nickname = data.get('nickname', '')
-            avatar_url = data.get('avatar_url', '')
-
             if not code:
                 return JsonResponse({
                     'code': 400,
                     'message': '缺少必要参数: code'
                 }, status=400)
 
-            # 这里需要配置你的微信小程序AppID和AppSecret
-            # 在实际项目中，请将这些敏感信息存储在环境变量中
             appid = 'wxd576896f718821dd'  # 替换为你的小程序AppID
             secret = '3d3719b287f359b54e8d310fb9e7fcb5'  # 替换为你的小程序AppSecret
 
@@ -60,34 +55,20 @@ def wechat_login(request):
             user, created = WechatUser.objects.get_or_create(
                 openid=openid,
                 defaults={
-                    'nickname': nickname,
-                    'avatar_url': avatar_url,
                     'session_key': session_key
                 }
             )
 
-            # 如果用户已存在，更新用户信息
             if not created:
-                if nickname:
-                    user.nickname = nickname
-                if avatar_url:
-                    user.avatar_url = avatar_url
                 if session_key:
                     user.session_key = session_key
                 user.save()
-
-            # 将用户ID存入session
-            request.session['user_id'] = user.id
-            request.session['openid'] = user.openid
 
             return JsonResponse({
                 'code': 200,
                 'message': '登录成功',
                 'data': {
-                    'user_id': user.id,
                     'openid': user.openid,
-                    'nickname': user.nickname,
-                    'avatar_url': user.avatar_url,
                     'is_new_user': created
                 }
             })
@@ -115,15 +96,15 @@ def get_current_user(request):
     获取当前登录用户信息接口
     """
     if request.method == 'GET':
-        user_id = request.session.get('user_id')
-        if not user_id:
+        openid = request.META.get('HTTP_AUTHORIZATION')
+        if not openid:
             return JsonResponse({
                 'code': 401,
                 'message': '用户未登录'
             }, status=401)
 
         try:
-            user = WechatUser.objects.get(id=user_id)
+            user = WechatUser.objects.filter(openid=openid).first()
             return JsonResponse({
                 'code': 200,
                 'message': '获取用户信息成功',
@@ -170,11 +151,11 @@ def get_goods(request):
 
 def get_user_from_session(request):
     """从session获取用户"""
-    user_id = request.session.get('user_id')
-    if not user_id:
+    openid = request.META.get('HTTP_AUTHORIZATION')
+    if not openid:
         return None
     try:
-        return WechatUser.objects.get(id=user_id)
+        return WechatUser.objects.filter(openid=openid).first()
     except WechatUser.DoesNotExist:
         return None
 
