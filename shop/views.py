@@ -9,6 +9,7 @@ import time
 import hashlib
 import xml.etree.ElementTree as ET
 import random
+from django.conf import settings
 
 
 @csrf_exempt
@@ -147,7 +148,7 @@ def get_goods(request):
     for good in goods:
         data = model_to_dict(good, exclude=['url'])
         if good.url:
-            data['url'] = request.build_absolute_uri(good.url.url)
+            data['url'] = f"{settings.SITE_DOMAIN}{good.url.url}"
         else:
             data['url'] = None
         ret.append(data)
