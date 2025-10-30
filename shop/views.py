@@ -146,7 +146,9 @@ def get_goods(request):
         is_active=True, tag_id=tag_id).order_by('id').all()
     ret = []
     for good in goods:
+        tags = good.tags.split(',') if good.tags else []
         data = model_to_dict(good, exclude=['url'])
+        data['tags'] = tags
         if good.url:
             data['url'] = f"{settings.SITE_DOMAIN}{good.url.url}"
         else:
