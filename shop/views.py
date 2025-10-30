@@ -146,9 +146,15 @@ def get_goods(request):
         is_active=True, tag_id=tag_id).order_by('id').all()
     ret = []
     for good in goods:
+        tag_list = []
         tags = good.tags.split(',') if good.tags else []
+        for tag in tags:
+            tag_list.append({
+                "text": tag,
+                "theme": "primary",
+            })
         data = model_to_dict(good, exclude=['url'])
-        data['tags'] = tags
+        data['tags'] = tag_list
         if good.url:
             data['url'] = f"{settings.SITE_DOMAIN}{good.url.url}"
         else:
