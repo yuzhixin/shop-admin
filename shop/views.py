@@ -146,7 +146,10 @@ def get_goods(request):
     ret = []
     for good in goods:
         data = model_to_dict(good, exclude=['url'])
-        data['url'] = request.build_absolute_uri(good['url'])
+        if good.url:
+            data['url'] = request.build_absolute_uri(good.url.url)
+        else:
+            data['url'] = None
         ret.append(data)
     return JsonResponse({
         'code': 200,
