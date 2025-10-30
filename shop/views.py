@@ -96,7 +96,7 @@ def get_current_user(request):
     获取当前登录用户信息接口
     """
     if request.method == 'GET':
-        openid = request.META.get('HTTP_AUTHORIZATION')
+        openid = request.META.get('HTTP_AUTHORIZATION').replace('Bearer ', '')
         if not openid:
             return JsonResponse({
                 'code': 401,
@@ -151,7 +151,7 @@ def get_goods(request):
 
 def get_user_from_session(request):
     """从session获取用户"""
-    openid = request.META.get('HTTP_AUTHORIZATION')
+    openid = request.META.get('HTTP_AUTHORIZATION').replace('Bearer ', '')
     if not openid:
         return None
     try:
