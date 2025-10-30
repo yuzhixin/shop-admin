@@ -58,7 +58,7 @@ class Goods(models.Model):
         Tag, on_delete=models.CASCADE, verbose_name='商品标签'
     )
     url = models.FileField()
-    desc = RichTextUploadingField()  # 支持图片上传
+    desc = models.CharField()
     tags = models.CharField(
         max_length=200, blank=True, verbose_name='商品标签（逗号分隔）'
     )
@@ -75,6 +75,9 @@ class Goods(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_url(self):
+        return "https://shop.kekouen.cn/" + self.url.url
 
 
 class Order(models.Model):

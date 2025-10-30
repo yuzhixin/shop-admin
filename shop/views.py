@@ -143,9 +143,14 @@ def get_goods(request):
     tag_id = request.GET.get('tag_id')
     goods = Goods.objects.filter(
         is_active=True, tag_id=tag_id).order_by('id').all()
+    ret = []
+    for good in goods:
+        data = model_to_dict(good, exclude=['url'])
+        data['url'] = data
+        ret.append(data)
     return JsonResponse({
         'code': 200,
-        'data': [model_to_dict(good) for good in goods]
+        'data': ret
     })
 
 
