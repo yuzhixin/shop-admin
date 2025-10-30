@@ -8,6 +8,7 @@ from shop.models import Tag, WechatUser, Goods, Order
 import time
 import hashlib
 import xml.etree.ElementTree as ET
+import random
 
 
 @csrf_exempt
@@ -33,8 +34,8 @@ def wechat_login(request):
 
             # 这里需要配置你的微信小程序AppID和AppSecret
             # 在实际项目中，请将这些敏感信息存储在环境变量中
-            appid = 'YOUR_WECHAT_APPID'  # 替换为你的小程序AppID
-            secret = 'YOUR_WECHAT_SECRET'  # 替换为你的小程序AppSecret
+            appid = 'wxd576896f718821dd'  # 替换为你的小程序AppID
+            secret = '3d3719b287f359b54e8d310fb9e7fcb5'  # 替换为你的小程序AppSecret
 
             # 调用微信API获取openid和session_key
             wechat_api_url = (
@@ -342,7 +343,6 @@ def wechat_pay(request):
             api_key = 'YOUR_API_KEY'
 
             # 生成预支付订单
-            import random
             nonce_str = ''.join(
                 random.choices('abcdefghijklmnopqrstuvwxyz0123456789', k=32)
             )
