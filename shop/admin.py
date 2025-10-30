@@ -47,17 +47,20 @@ class GoodsAdmin(admin.ModelAdmin):
     """商品管理界面配置"""
     list_display = ('name', 'tag', 'price', 'is_active', 'created_at')
     list_filter = ('is_active', 'tag', 'created_at')
-    search_fields = ('name', 'desc')
+    search_fields = ('name', 'desc', 'tags')
     ordering = ('-created_at',)
     list_editable = ('is_active', 'price')
     readonly_fields = ('created_at', 'updated_at')
 
     fieldsets = (
         ('基本信息', {
-            'fields': ('name', 'tag', 'price', 'is_active')
+            'fields': ('name', 'tag', 'price', 'is_active', 'url')
         }),
         ('商品描述', {
             'fields': ('desc',)
+        }),
+        ('商品标签', {
+            'fields': ('tags',)
         }),
         ('时间信息', {
             'fields': ('created_at', 'updated_at')
