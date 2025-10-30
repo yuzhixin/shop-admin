@@ -57,7 +57,7 @@ class Goods(models.Model):
     tag = models.ForeignKey(
         Tag, on_delete=models.CASCADE, verbose_name='商品标签'
     )
-    url = models.URLField(max_length=500, verbose_name='商品图片URL')
+    url = models.FileField()
     desc = RichTextUploadingField()  # 支持图片上传
     tags = models.CharField(
         max_length=200, blank=True, verbose_name='商品标签（逗号分隔）'
