@@ -76,9 +76,6 @@ class Goods(models.Model):
     def __str__(self):
         return self.name
 
-    def get_url(self):
-        return "https://shop.kekouen.cn/" + self.url.url
-
 
 class Order(models.Model):
     """订单模型"""

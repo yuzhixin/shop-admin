@@ -146,7 +146,7 @@ def get_goods(request):
     ret = []
     for good in goods:
         data = model_to_dict(good, exclude=['url'])
-        data['url'] = data
+        data['url'] = request.build_absolute_uri(good['url'])
         ret.append(data)
     return JsonResponse({
         'code': 200,
