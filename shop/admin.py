@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import WechatUser, Tag, Goods, Order
+from shop.models import WechatUser, Tag, Goods, Order
+from django import forms
+from django.db import models
 
 
 @admin.register(WechatUser)
@@ -66,6 +68,11 @@ class GoodsAdmin(admin.ModelAdmin):
             'fields': ('created_at', 'updated_at')
         }),
     )
+
+    formfield_overrides = {
+        models.CharField: {'widget': forms.Textarea(
+            attrs={'rows': 4, 'cols': 40})}
+    }
 
 
 @admin.register(Order)
